@@ -43,8 +43,6 @@ static void jumpToApp(uint32_t address)
 	for (i = 0; i < 8; i++)
 		NVIC->ICER[i] = NVIC->IABR[i];
 
-	NVIC_SetVectorTable(NVIC_VectTab_FLASH, 0x20000);
-
 	// set stack pointer as in application's vector table
 	__set_MSP((u32)(ApplicationAddress[0]));
 	Jump_To_Application();
