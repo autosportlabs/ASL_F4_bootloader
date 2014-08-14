@@ -14,8 +14,6 @@
 #define FLASH_USER_BASE         ((uint32_t)(0x08000000 + 0x20000))
 
 //-----------------------------------------------------------------------------
-// Code stolen from "matis"
-// http://forum.chibios.org/phpbb/viewtopic.php?f=2&t=338
 static void jumpToApp(uint32_t address)
 {
 	typedef void (*pFunction)(void);
@@ -33,9 +31,11 @@ static void jumpToApp(uint32_t address)
 	Jump_To_Application = (pFunction) JumpAddress;
 
 	// reset all interrupts to default
+	//TODO do this the CMSIS way
 //	chSysDisable();
 
 	// Clear pending interrupts just to be on the save side
+	//TODO do we need this?
 	//SCB_ICSR = ICSR_PENDSVCLR;
 
 	// Disable all interrupts
