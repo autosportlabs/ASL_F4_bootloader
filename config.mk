@@ -37,8 +37,8 @@ RCP_SRC = $(APP_PATH)/src
 # The source files of our application
 APP_SRC = $(APP_PATH)/main.c \
 	$(APP_PATH)/gqueue.c \
-	$(APP_PATH)/ihex.c \
 	$(APP_PATH)/img_utils.c \
+	$(APP_PATH)/bootmode.c \
 	$(APP_PATH)/usb_bsp.c \
 	$(APP_PATH)/usbd_cdc_vcp.c \
 	$(APP_PATH)/usbd_desc.c \
