@@ -2,7 +2,8 @@
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
 
-bool bootmode_upgrade_requested(void)
+
+static bool bootmode_check_gpi(void)
 {
 	bool ret = false;
 	uint8_t bit = 0;
@@ -23,6 +24,25 @@ bool bootmode_upgrade_requested(void)
 		ret = true;
 
 	GPIO_DeInit(GPIOA);
+
+	return ret;
+}
+
+static bool bootmode_check_software_flag(void)
+{
+	return false;
+}
+
+bool bootmode_upgrade_requested(void)
+{
+	bool gpi, sw;
+	bool ret = false;
+
+	gpi = bootmode_check_gpi();
+	sw = bootmode_check_software_flag();
+
+	if (gpi || sw)
+		ret = true;
 
 	return ret;
 }
