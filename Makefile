@@ -54,7 +54,7 @@ GDB     := $(PREFIX)-gdb
 #application libraries
 include libs.mk
 
-CFLAGS ?= -Os -g -Wall -Wextra -fno-common -c -mthumb \
+CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb \
 	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES)
@@ -67,7 +67,7 @@ LIBS += $(addprefix -l,$(BASE_LIBS))
 LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 \
 	-L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \
 	-nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE) \
-	-msoft-float
+	-msoft-float -Wl,--Map=$(TARGET).map
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
@@ -86,7 +86,7 @@ endif
 
 LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
 
-all: $(LIBS_ALL) $(TARGET).bin
+all: messages $(LIBS_ALL) $(TARGET).bin
 
 libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
 	$(Q)$(AR) $(ARFLAGS) $@ $^
@@ -97,6 +97,7 @@ libstm32_usb.a: $(STM32_USB_OBJS)
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(PREFIX)-objcopy -Obinary $< $@
+	$(SIZE) $<
 
 $(TARGET).elf: $(OBJS)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
@@ -110,11 +111,24 @@ $(TARGET).elf: $(OBJS)
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CC) $(ASFLAGS) -c -o $@ $<
 
+messages:
+	@printf " Generating messages\n"
+	$(Q)xbvcgen -i upgrade_agent/messages.yaml -o msgs -l c -l python -t device -c
+	$(Q)cp -f msgs/C/* upgrade_agent
+	$(Q)cp -f msgs/Python/* host_tools
+	$(Q)rm -rf msgs
+
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d $(OBJS) $(LIBS_ALL)\
 	$(STM32F4_PERIPH_OBJS) \
-	$(shell find . -name "*.d")\
-	$(TARGET).bin $(TARGET).elf
+	$(shell find . -name "*.d") \
+	$(TARGET).bin $(TARGET).elf \
+	upgrade_agent/xbvc_core.c \
+	upgrade_agent/xbvc_core.h \
+	upgrade_agent/cobs.c \
+	upgrade_agent/cobs.h \
+	host_tools/cobs.py* \
+	host_tools/xbvc_py*
 
 flash: $(TARGET).bin
 	$(APP_FLASH)
@@ -128,4 +142,4 @@ ddd: $(TARGET).elf
 gdb: $(TARGET).elf
 	$(GDB) -ex "target ext localhost:3333" -ex "mon reset halt" -ex "mon arm semihosting enable" $(TARGET).elf
 
-.PHONY: clean flash debug ddd
+.PHONY: clean flash debug ddd messages
