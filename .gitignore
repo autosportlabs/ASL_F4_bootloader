@@ -25,3 +25,7 @@
 .project
 *.bin
 *.d
+
+# Misc
+*cscope.*
+*.map
