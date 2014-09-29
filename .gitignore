@@ -29,3 +29,11 @@
 # Misc
 *cscope.*
 *.map
+/host_tools/cobs.py
+/host_tools/cobs.pyc
+/host_tools/xbvc_py.py
+/host_tools/xbvc_py.pyc
+/upgrade_agent/cobs.c
+/upgrade_agent/cobs.h
+/upgrade_agent/xbvc_core.c
+/upgrade_agent/xbvc_core.h
