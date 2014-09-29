@@ -1,0 +1,54 @@
+#XBVC Messages for ASL F4 Bootloader
+
+#Integer types:
+#u32: unsigned 32 bit integer
+#s32: signed 32 bit integer
+#u16: unsigned 16 bit integer
+#s16: signed 16 bit integer
+#u8: unsigned 8 bit integer
+#s8: signed 8 bit integer
+#y[x]: array of type 'y', 'x' members long
+
+#Example enumeration
+cmd_status: {
+  ERR_SUCCESS,
+  ERR_FLASH_FAIL,
+  ERR_VERIFY_FAIL,
+  ERR_RUN_FAIL
+}
+
+# Note that there are two special fields in each command
+# _targets: this specifies which target (i.e. which end of the message pipe)
+# will be responsible for generating this message.  Since this protocol was made
+# with embedded targets in mind, this is important for space savings in the code
+# Note that it is not necessary for all language targets to adhere to this directive
+# _id: This specifies the unique message id and allows for some minor extensibility
+flash_command:
+  - _targets: {host}
+  - _id: 0
+  - offset: u32
+  - data_len: u32
+  - data: u32[64]
+
+flash_response:
+  - _targets: {device}
+  - _id: 1
+  - error: u32
+
+verify_command:
+  - _targets: {host}
+  - _id: 2
+
+verify_response:
+  - _targets: {device}
+  - _id: 3
+  - error: u32
+
+run_command:
+  - _targets: {host}
+  - _id: 4
+
+run_response:
+  - _targets: {device}
+  - _id: 5
+  - error: u32
