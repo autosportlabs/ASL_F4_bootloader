@@ -52,3 +52,11 @@ run_response:
   - _targets: {device}
   - _id: 5
   - error: u32
+
+ping_command:
+  - _targets: {host}
+  - _id: 6
+
+ping_response:
+  - _targets: {device}
+  - _id: 7

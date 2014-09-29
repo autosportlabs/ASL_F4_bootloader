@@ -56,3 +56,11 @@ void xbvc_handle_run_command(struct x_run_command *msg)
 	if (last_known_info != NULL)
 		jump_to_app(last_known_info->start_addr);
 }
+
+void xbvc_handle_ping_command(struct x_ping_command *msg)
+{
+	struct x_ping_response rsp;
+
+	xbvc_send(&rsp, E_MSG_PING_RESPONSE);
+	vcp_flush_tx();
+}
