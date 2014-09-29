@@ -2,6 +2,7 @@
 #include <xbvc_core.h>
 #include <img_utils.h>
 #include <flash_utils.h>
+#include <usbd_cdc_vcp.h>
 
 static struct app_info_block *last_known_info;
 
@@ -40,11 +41,17 @@ void xbvc_handle_run_command(struct x_run_command *msg)
 	rsp.error = ERR_SUCCESS;
 
 	if (last_known_info == NULL)
+		last_known_info = scan_for_app();
+
+	if (last_known_info == NULL)
 		rsp.error = ERR_RUN_FAIL;
 	else
 		rsp.error = ERR_SUCCESS;
 
 	xbvc_send(&rsp, E_MSG_RUN_RESPONSE);
+
+	/* Make sure we sent the run response */
+	vcp_flush_tx();
 
 	if (last_known_info != NULL)
 		jump_to_app(last_known_info->start_addr);

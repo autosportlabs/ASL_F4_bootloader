@@ -154,11 +154,9 @@ def main():
         print "Firmware was valid, starting new firmware"
         msg = run_command()
         #TODO: Make the firmware send a response (even if it means a delay)
-        ep.send(msg, RUN_RESPONSE_ID)
+        res = ep.send(msg, RUN_RESPONSE_ID)
+        print res
         ep.flush()
-        ep.send(msg, RUN_RESPONSE_ID)
-        ep.flush()
-        ep.send(msg, RUN_RESPONSE_ID)
     else:
         raise Exception("Error validating flash on device. Updgrade failed")
 

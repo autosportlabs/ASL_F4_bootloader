@@ -86,7 +86,7 @@ uint16_t vcp_tx(uint8_t *buf, uint32_t len)
 	/* If we aren't connected, just drop the data on the floor */
 	if (!connected)
 		return USBD_FAIL;
-	
+
 	res = VCP_DataTx(buf, len);
 	return res;
 }
@@ -101,7 +101,7 @@ uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
 		for (i = 0; i < len; i++) {
 			if(queue_is_empty(&rx_queue))
 				break;
-			
+
 			queue_dequeue(&rx_queue, &buf[i]);
 		}
 	}
@@ -114,6 +114,13 @@ void vcp_flush_tx(void)
 {
 	while ((APP_Rx_ptr_in != APP_Rx_ptr_out) && (USB_Tx_State != 0))
 		asm volatile("NOP");
+
+	/* Wait for a short period to ensure that the data is shifted
+	 * out on the bus */
+
+	for (int i = 0; i < 1000000; i++) {
+		asm volatile("NOP");
+	}
 }
 
 /* Private functions ---------------------------------------------------------*/
@@ -199,13 +206,13 @@ static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 
 	while (Len--) {
 		overrun = check_tx_overrun();
-	   
+
 		while(overrun) {
 			overrun = check_tx_overrun();
 		}
 
 		APP_Rx_Buffer[APP_Rx_ptr_in++] = *Buf++;
-		
+
 		/* Avoid running off the end of the buffer */
 		if(APP_Rx_ptr_in >= APP_RX_DATA_SIZE)
 		{
@@ -234,12 +241,12 @@ static uint16_t VCP_DataTx (uint8_t* Buf, uint32_t Len)
 static uint16_t VCP_DataRx (uint8_t* Buf, uint32_t Len)
 {
 	bool queue_full = false;
-	
+
 	while(Len-- && !queue_full) {
 		queue_enqueue(&rx_queue, Buf++);
 		queue_full = queue_is_full(&rx_queue);
 	}
-	
+
 	return USBD_OK;
 }
 
