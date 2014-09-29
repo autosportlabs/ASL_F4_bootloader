@@ -72,6 +72,7 @@ void vcp_setup(void);
 void vcp_task(void *params);
 uint16_t vcp_tx(uint8_t *buf, uint32_t len);
 uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay);
+void vcp_flush_tx(void);
 int vcp_send(uint8_t *buf, uint32_t len);
 #endif /* __USBD_CDC_VCP_H */
 

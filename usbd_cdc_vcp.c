@@ -51,6 +51,7 @@ extern uint32_t APP_Rx_ptr_in;    /* Increment this pointer or roll it back to
                                      start address when writing received data
                                      in the buffer APP_Rx_Buffer. */
 extern uint32_t APP_Rx_ptr_out;
+extern uint8_t USB_Tx_State;
 
 extern USB_OTG_CORE_HANDLE           USB_OTG_dev;
 extern uint32_t USBD_OTG_ISR_Handler (USB_OTG_CORE_HANDLE *pdev);
@@ -93,14 +94,26 @@ uint16_t vcp_tx(uint8_t *buf, uint32_t len)
 uint16_t vcp_rx(uint8_t *buf, uint32_t len, size_t max_delay)
 {
 	int i = 0;
-	for (i = 0; i < len; i++) {
-		if(queue_is_empty(&rx_queue))
-			break;
 
-		queue_dequeue(&rx_queue, &buf[i]);
+	/* Force a critical section */
+	__disable_irq();
+	{
+		for (i = 0; i < len; i++) {
+			if(queue_is_empty(&rx_queue))
+				break;
+			
+			queue_dequeue(&rx_queue, &buf[i]);
+		}
 	}
+	__enable_irq();
 
 	return i;
+}
+
+void vcp_flush_tx(void)
+{
+	while ((APP_Rx_ptr_in != APP_Rx_ptr_out) && (USB_Tx_State != 0))
+		asm volatile("NOP");
 }
 
 /* Private functions ---------------------------------------------------------*/
