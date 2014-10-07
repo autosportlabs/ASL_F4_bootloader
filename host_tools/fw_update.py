@@ -86,31 +86,43 @@ class FwUpdater(object):
                 pass
 
         return retport
-        
-    def update_firmware(self, filepath, ser_port, verbose=False):
+
+    def _init_xbvc(self):
         #Create our edgepoint
-        ep = XBVCSerialEP(ser_port)
+        self.ep = XBVCSerialEP(self.port)
 
         #set the timeout to 1 second
         # (since we're erasing, this can take some time)
-        ep.timeout_ms = 1000
-        ep.connect()
-        ep.start()
+        self.ep.timeout_ms = 1000
+        self.ep.connect()
+        self.ep.start()
 
+    def _load_words_from_ihex(self):
         #Load and process the ihex file
         ih = ihex.iHex()
-        ih.load_ihex(filepath)
+        ih.load_ihex(self.filepath)
 
         #Get a list of the words in the ihex file (and their offsets)
         wl = ih.get_u32_list()
 
         #Now, create 64 word chunks from this list of words
-        wordchunks = ihex.chunks(wl, 64)
+        wordchunks = [x for x in ihex.chunks(wl, 64)]
+
+        return wordchunks
+
+    def update_firmware(self, filepath, port, verbose=False):
+        self.filepath = filepath
+        self.port = port
+
+        #initialize the xbvc edgepoint
+        self._init_xbvc()
+
+        wordchunks = self._load_words_from_ihex()
 
         print "Updating firmware..."
 
         #get the total number of chunks (we'll use this for the progress bar)
-        num_chunks = len([x for x in ihex.chunks(wl, 64)])
+        num_chunks = len(wordchunks)
         chunks_remaining = num_chunks
 
         #Take this list of chunks and turn each chunk into a flash_command
@@ -141,14 +153,14 @@ class FwUpdater(object):
                     self._progress_cb(percent_complete)
 
             #send the command and wait for a response
-            res = ep.send(fcmd, FLASH_RESPONSE_ID)
+            res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
 
             if res == None:
                 #Retry one time
                 if verbose:
                     print "Retrying"
-                ep.flush()
-                res = ep.send(fcmd, FLASH_RESPONSE_ID)
+                self.ep.flush()
+                res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
                 if res == None:
                     raise Exception("Error flashing device, no response!")
 
@@ -168,7 +180,7 @@ class FwUpdater(object):
 
         #wait for a verify response
         print "Verifying firmware"
-        rsp = ep.send(msg, VERIFY_RESPONSE_ID)
+        rsp = self.ep.send(msg, VERIFY_RESPONSE_ID)
 
         if verbose:
             print rsp
@@ -176,7 +188,7 @@ class FwUpdater(object):
         if rsp.error == 0:
             print "Firmware was valid"
             msg = run_command()
-            res = ep.send(msg, RUN_RESPONSE_ID)
+            res = self.ep.send(msg, RUN_RESPONSE_ID)
             if res.error == 0:
                 print "Starting firmware"
             elif res == None:
@@ -184,8 +196,8 @@ class FwUpdater(object):
         else:
             raise Exception("Error validating flash on device. Updgrade failed")
 
-        ep.stop()
-        ep.disconnect()
+        self.ep.stop()
+        self.ep.disconnect()
 
 def main():
     parser = optparse.OptionParser()
@@ -200,6 +212,8 @@ def main():
     parser.add_option('-v', '--verbose',
                       dest="verbose",
                       help="turn on verbose debugging")
+
+    raw_input("Place your device into bootloader mode and then press any key")
 
     options, remainder = parser.parse_args()
     fu = FwUpdater()

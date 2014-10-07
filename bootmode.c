@@ -1,7 +1,9 @@
 #include <stdbool.h>
+#include <stdint.h>
+
 #include <stm32f4xx_gpio.h>
 #include <stm32f4xx_rcc.h>
-
+#include <app_info.h>
 
 static bool bootmode_check_gpi(void)
 {
@@ -30,7 +32,15 @@ static bool bootmode_check_gpi(void)
 
 static bool bootmode_check_software_flag(void)
 {
-	return false;
+	struct app_handshake_block *handshake = (struct app_handshake_block*)HANDSHAKE_ADDR;
+	bool ret = false;
+	
+	if (handshake->loader_magic == LOADER_KEY) {
+		handshake->loader_magic = 0;
+		ret = true;
+	}
+
+	return ret;
 }
 
 bool bootmode_upgrade_requested(void)

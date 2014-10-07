@@ -86,7 +86,7 @@ endif
 
 LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
 
-all: messages $(LIBS_ALL) $(TARGET).bin
+all: messages $(LIBS_ALL) $(TARGET).bin pylib
 
 libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
 	$(Q)$(AR) $(ARFLAGS) $@ $^
@@ -111,6 +111,12 @@ $(TARGET).elf: $(OBJS)
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(CC) $(ASFLAGS) -c -o $@ $<
 
+pylib: messages
+	@printf " Generating python library\n"
+	$(Q)python setup.py sdist
+	$(Q)cp dist/* .
+	$(Q)rm -rf asl_f4_loader.egg-info dist
+
 messages:
 	@printf " Generating messages\n"
 	$(Q)xbvcgen -i upgrade_agent/messages.yaml -o msgs -l c -l python -t device -c
@@ -128,7 +134,8 @@ clean:
 	upgrade_agent/cobs.c \
 	upgrade_agent/cobs.h \
 	host_tools/cobs.py* \
-	host_tools/xbvc_py*
+	host_tools/xbvc_py* \
+	asl_f4_loader*.tar.gz
 
 flash: $(TARGET).bin
 	$(APP_FLASH)
