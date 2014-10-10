@@ -53,7 +53,15 @@ class FwImage(object):
         """
         crc32 = crcmod.Crc(0x104c11db7, initCrc=0xffffffff, rev=False)
         for idx in range(0, len(block), 4):
-            tmp = struct.unpack("<I", block[idx:idx+4])[0]
+            tmpblock = block[idx:idx+4]
+            print len(tmpblock)
+
+            #Make sure that the block is 4 octets long, if not, pad it
+            if not len(tmpblock) == 4:
+                tmpblock += '\xff' * (4 - len(tmpblock))
+
+            print tmpblock
+            tmp = struct.unpack("<I", tmpblock)[0]
             crc32.update(struct.pack(">I", tmp))
 
         return crc32.crcValue
