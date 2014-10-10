@@ -6,6 +6,7 @@ USB bootloader for STM32F407
 Requirements
 ------------
 * Python2.7
+* crcmod (via pip)
 * [GCC Arm Embedded 4.7](https://launchpad.net/gcc-arm-embedded)
 * [XBVC](https://github.com/Jeff-Ciesielski/XBVC)
 * [ihexpy](https://github.com/Jeff-Ciesielski/ihexpy)
