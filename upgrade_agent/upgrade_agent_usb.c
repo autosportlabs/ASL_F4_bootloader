@@ -55,3 +55,13 @@ void upgrade_agent_usb_loader(void)
 	while(1)
 		xbvc_run();
 }
+
+void upgrade_agent_usb_deinit(void)
+{
+	USBD_DeInit(&USB_OTG_dev);
+}
+
+void upgrade_agent_usb_flush(void)
+{
+	vcp_flush_tx();
+}
