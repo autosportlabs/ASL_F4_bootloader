@@ -34,11 +34,11 @@ The app_info.h header contains a struct that will be needed in the
 firmware.  No special placement is required, however, you will need to
 have it aligned on a word boundary, like so:
 
-__attribute__((aligned (4)))
-static const struct app_info_block info_block = {
-	.magic_number = APP_INFO_MAGIC_NUMBER,
-	.info_crc = 0xDEADBEEF,
-};
+    __attribute__((aligned (4)))
+    static const struct app_info_block info_block = {
+    	.magic_number = APP_INFO_MAGIC_NUMBER,
+    	.info_crc = 0xDEADBEEF,
+    };
 
 
 Post procesing the firmware (which inserts CRC's and starting
