@@ -55,6 +55,8 @@ class FwUpdater(object):
 
             ping = ping_command()
 
+            ep.flush()
+
             res = ep.send(ping, PING_RESPONSE_ID)
         except:
             res = None

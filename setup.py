@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "asl_f4_loader",
-    version = "0.0.4",
+    version = "0.0.5",
     author = "Jeff Ciesielski",
     author_email = "jeff@autosportlabs.com",
     description = ("A library and shell script to perform firmware updates on Cortex M4 Microcontrollers. (Currently: STM32F4)"),
@@ -25,8 +25,9 @@ setup(
         "License :: OSI Approved :: GPLv2 License",
     ],
     entry_points = {
-        'script': [
-            'asl_f4_loader = myns.mypkg.mymodule:the_function'
+        'console_scripts': [
+            'asl_f4_loader = asl_f4_loader.fw_update:main',
+            'asl_f4_fw_postprocess = asl_f4_loader.fw_postprocess:main'
         ]
     },
 )
