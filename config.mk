@@ -74,5 +74,5 @@ $(error CPU is not defined, please define it in your CPU specific config.mk file
 endif
 
 #Optional command to flash the board using an ST-Link
-APP_FLASH = sudo st-flash write $(TARGET).bin 0x08000000
+APP_FLASH = sudo st-flash erase write $(TARGET).bin 0x08000000
 

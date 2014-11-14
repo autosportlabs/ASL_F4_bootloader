@@ -127,6 +127,8 @@ messages:
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d $(OBJS) $(LIBS_ALL)\
 	$(STM32F4_PERIPH_OBJS) \
+	$(APP_OBJS) \
+	$(STM32_USB_OBJS) \
 	$(shell find . -name "*.d") \
 	$(TARGET).bin $(TARGET).elf \
 	upgrade_agent/xbvc_core.c \
