@@ -53,11 +53,13 @@ void xbvc_handle_run_command(struct x_run_command *msg)
 	/* Make sure we sent the run response */
 	upgrade_agent_usb_flush();
 
-	/* Shut down the USB interface */
-	upgrade_agent_usb_deinit();
+	if (last_known_info != NULL) {
+		/* Shut down the USB interface */
+		upgrade_agent_usb_deinit();
 
-	if (last_known_info != NULL)
+		/* Get going */
 		jump_to_app(last_known_info->start_addr);
+	}
 }
 
 void xbvc_handle_ping_command(struct x_ping_command *msg)
