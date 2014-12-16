@@ -1,7 +1,7 @@
 from xbvc_py import *
 import serial
 from serial.tools import list_ports
-from ihex import ihex
+import ihextools as ihex
 import optparse
 import sys
 

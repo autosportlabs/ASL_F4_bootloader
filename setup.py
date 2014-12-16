@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "asl_f4_loader",
-    version = "0.0.5",
+    version = "0.0.6",
     author = "Jeff Ciesielski",
     author_email = "jeff@autosportlabs.com",
     description = ("A library and shell script to perform firmware updates on Cortex M4 Microcontrollers. (Currently: STM32F4)"),
@@ -30,6 +30,8 @@ setup(
             'asl_f4_fw_postprocess = asl_f4_loader.fw_postprocess:main'
         ]
     },
-    install_requres=[
+    install_requires=[
+        'ihextools >= 1.0.0',
         'pyserial >= 2.7',
+    ]
 )
