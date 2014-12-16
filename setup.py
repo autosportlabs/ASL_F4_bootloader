@@ -30,4 +30,6 @@ setup(
             'asl_f4_fw_postprocess = asl_f4_loader.fw_postprocess:main'
         ]
     },
+    install_requres=[
+        'pyserial >= 2.7',
 )
