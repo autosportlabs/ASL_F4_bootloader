@@ -18,7 +18,7 @@ setup(
     keywords = "firmware bootloader stm32f4",
     url = "https://github.com/autosportlabs/ASL_F4_bootloader/tree/master/host_tools",
     packages=['asl_f4_loader'],
-    package_dir={'asl_f4_loader': 'host_tools/',},
+    package_dir={'asl_f4_loader': 'host_tools',},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
