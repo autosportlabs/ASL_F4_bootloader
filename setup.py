@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "asl_f4_loader",
-    version = "0.0.6",
+    version = "0.0.7",
     author = "Jeff Ciesielski",
     author_email = "jeff@autosportlabs.com",
     description = ("A library and shell script to perform firmware updates on Cortex M4 Microcontrollers. (Currently: STM32F4)"),

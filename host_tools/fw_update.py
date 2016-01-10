@@ -42,8 +42,15 @@ def progress_bar(percent_full, width=50):
     sys.stdout.flush()
 
 class FwUpdater(object):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._progress_cb = None
+        self._logger = kwargs.get('logger', None)
+
+    def _log(self, msg):
+        if self._logger:
+            self._logger.info("FwUpdater: {}".format(msg))
+        else:
+            print(msg)
 
     def _send_ping(self, port):
         #Create our edgepoint
@@ -72,13 +79,13 @@ class FwUpdater(object):
     def scan_for_device(self):
         ports = [x[0] for x in list_ports.comports()]
         retport = None
-        print "Searching for an active bootloader"
+        self._log("Searching for an active bootloader")
         
         for p in ports:
             try:
                 rsp = self._send_ping(p)
                 if not rsp == None:
-                    print "Found bootloader on:", p
+                    self._log("Found bootloader on: {}".format(p))
                     retport = p
                     break
                 else:
@@ -121,7 +128,7 @@ class FwUpdater(object):
 
         wordchunks = self._load_words_from_ihex()
 
-        print "Updating firmware..."
+        self._log("Updating firmware...")
 
         #get the total number of chunks (we'll use this for the progress bar)
         num_chunks = len(wordchunks)
@@ -147,8 +154,8 @@ class FwUpdater(object):
             #if we're in verbose mode, print everything we see on the
             #wire, otherwise, just keep a progress bar rolling
             if verbose:
-                print fcmd
-                print len(fcmd.encode())
+                self._log(fcmd)
+                self._log(len(fcmd.encode()))
             else:
                 percent_complete = 100 - ((chunks_remaining / float(num_chunks)) * 100)
                 if self._progress_cb:
@@ -160,39 +167,39 @@ class FwUpdater(object):
             if res == None:
                 #Retry one time
                 if verbose:
-                    print "Retrying"
+                    self._log("Retrying")
                 self.ep.flush()
                 res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
                 if res == None:
                     raise Exception("Error flashing device, no response!")
 
                 if verbose:
-                    print res
+                    self._log(res)
             elif res.error != 0:
                 raise Exception("Error flasing device, got error:{}".format(res.error))
             else:
                 chunks_remaining -= 1
                 if verbose:
-                    print res
+                    self._log(res)
 
         if not verbose and self._progress_cb:
             self._progress_cb(100)
-            print "\n"
+            self._log("\n")
         msg = verify_command()
 
         #wait for a verify response
-        print "Verifying firmware"
+        self._log("Verifying firmware")
         rsp = self.ep.send(msg, VERIFY_RESPONSE_ID)
 
         if verbose:
-            print rsp
+            self._log(rsp)
 
         if rsp.error == 0:
-            print "Firmware was valid"
+            self._log("Firmware was valid")
             msg = run_command()
             res = self.ep.send(msg, RUN_RESPONSE_ID)
             if res.error == 0:
-                print "Starting firmware"
+                self._log("Starting firmware")
             elif res == None:
                 raise Exception("Error: Bootloader did not respond to run command")
         else:
