@@ -14,4 +14,7 @@ ifneq ($(STM32F4_USB_LIBS),)
   endif
 endif
 
+# Flash controller driver
+CPU_C_FILES += $(CPU_BASE)/flash_utils.c
+
 CPU_DEFINES = -D$(CPU_ARCH) -DSTM32F4XX

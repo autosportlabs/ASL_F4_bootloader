@@ -21,7 +21,6 @@ APP_C_FILES = $(APP_PATH)/main.c \
 	$(APP_PATH)/gqueue.c \
 	$(APP_PATH)/img_utils.c \
 	$(APP_PATH)/bootmode.c \
-	$(APP_PATH)/upgrade_agent/flash_utils.c \
 	$(APP_PATH)/upgrade_agent/upgrade_agent_usb.c \
 	$(APP_PATH)/upgrade_agent/xbvc_core.c \
 	$(APP_PATH)/upgrade_agent/cobs.c \
