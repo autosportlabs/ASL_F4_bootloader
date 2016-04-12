@@ -1,54 +1,43 @@
+/*
+ * Race Capture Firmware
+ *
+ * Copyright (C) 2016 Autosport Labs
+ *
+ * This file is part of the Race Capture firmware suite
+ *
+ * This is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * See the GNU General Public License for more details. You should
+ * have received a copy of the GNU General Public License along with
+ * this code. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-#include <usbd_cdc_core.h>
-#include <usbd_usr.h>
-#include <usbd_conf.h>
-#include <usbd_desc.h>
-#include <usbd_cdc_vcp.h>
-
+#include <USB-CDC_device.h>
 #include <upgrade_agent.h>
 #include <xbvc_core.h>
-#include <core_cm4.h>
-
-USB_OTG_CORE_HANDLE USB_OTG_dev __attribute__ ((aligned (4)));
+#include <led.h>
 
 /* This is called by the XBVC state machine */
 static void upgrade_agent_usb_init(void *params)
 {
-	GPIO_InitTypeDef gpio_conf;
-
-	/* Clear the GPIO Structure */
-	GPIO_StructInit(&gpio_conf);
-
-	/* Initialize the USB hardware */
-	USBD_Init(&USB_OTG_dev,
-		  USB_OTG_FS_CORE_ID,
-		  &USR_desc,
-		  &USBD_CDC_cb,
-		  &USR_cb);
-
-
-	/* Set up the LED */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-	gpio_conf.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio_conf.GPIO_Mode = GPIO_Mode_OUT;
-	gpio_conf.GPIO_OType = GPIO_OType_PP;
-	gpio_conf.GPIO_Pin = GPIO_Pin_10;
-	GPIO_Init(GPIOD, &gpio_conf);
-
-	/* Start the systick timer.  We'll abuse this for LED
-	 * goodness. */
-
+	USB_CDC_device_init();
+	led_init();
 }
 
 int upgrade_agent_usb_read(uint8_t *dst, int len)
 {
-	uint16_t res;
-	res = vcp_rx(dst, len, 0);
-
-	return (int)res;
+	return USB_CDC_read(dst, len);
 }
 
 int upgrade_agent_usb_write(uint8_t *buf, int len)
@@ -56,15 +45,8 @@ int upgrade_agent_usb_write(uint8_t *buf, int len)
         /* Unfortunately the usb system doesn't return the amount
 	 * sent, just success or fail.  If we succeed, return the
 	 * amount we were supposed to send, otherwise 0*/
-	uint16_t res;
-	res = vcp_tx(buf, len);
-
-	if (res == USBD_FAIL)
-		res = 0;
-	else
-		res = (uint16_t)len;
-
-	return res;
+	USB_CDC_write(buf, len);
+	return len;
 }
 
 void upgrade_agent_usb_loader(void)
@@ -77,7 +59,7 @@ void upgrade_agent_usb_loader(void)
 
 	while(1) {
 		if (i++ == 100000) {
-			GPIO_ToggleBits(GPIOD, GPIO_Pin_10);
+			led_toggle();
 			i = 0;
 		}
 		xbvc_run();
@@ -86,13 +68,12 @@ void upgrade_agent_usb_loader(void)
 
 void upgrade_agent_usb_deinit(void)
 {
-	/* Shut down USB */
-	USBD_DeInit(&USB_OTG_dev);
-
-	GPIO_DeInit(GPIOD);
+	/* TODO: Shut down USB */
+	USB_CDC_device_deinit();
+	led_deinit();
 }
 
 void upgrade_agent_usb_flush(void)
 {
-	vcp_flush_tx();
+	USB_CDC_flush();
 }

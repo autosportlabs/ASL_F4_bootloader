@@ -113,6 +113,7 @@ struct app_info_block *scan_for_app(void)
 	return NULL;
 }
 
+__attribute__((__naked__,__noreturn__))
 void jump_to_app(uint32_t address)
 {
 	typedef void (*func_ptr)(void);

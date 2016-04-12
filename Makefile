@@ -22,15 +22,26 @@
 # This file can be used to autoconfigure your board for ease of
 # building, otherwise it passes the BOARD environment variable to the
 # rest of the makefile
+
+# TODO: dep files
+
 -include config.mk
 
-#ifeq ($(APP),)
-#$(error APP is not defined.  Pass it in as APP= or create a config.mk file)
-#endif
-
-ifeq ($(APP_PATH),)
-APP_PATH = .
+ifeq ($(BOARD),)
+  ifeq ($(wildcard board.default),)
+    $(error BOARD is not defined.  Pass it in as BOARD= or create a config.mk file)
+  else
+    BOARD = $(shell cat board.default)
+  endif
+else
+  $(shell echo "$(BOARD)" > board.default)
 endif
+
+LIB_PATH := libs
+BOARD_PATH := board/$(BOARD)
+
+# load the board specific configuration
+include $(BOARD_PATH)/config.mk
 
 ifeq ($(CPU_TYPE),)
 $(error CPU_TYPE is not defined, please ensure it is defined in your cpu config.mk)
@@ -51,57 +62,60 @@ OPENOCD := openocd
 DDD     := ddd
 GDB     := $(PREFIX)-gdb
 
-#application libraries
-include libs.mk
-
-CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb \
-	  -mcpu=$(CPU_TYPE) -MD -std=gnu99
+# This file is dynamically created based on the libraries in the libs/ folder
+-include libs.mk
 
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES)
+INCLUDES += -Icpu/common -Iboard/common
+
+CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb
+CFLAGS += -mcpu=$(CPU_TYPE) -MD -std=gnu99
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
+
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
 
 LIBS = -lnosys
-LIBS += $(addprefix -l,$(BASE_LIBS))
 
-LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 \
-	-L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld \
-	-nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE) \
-	-msoft-float -Wl,--Map=$(TARGET).map
+LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 
+LDFLAGS += -L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld 
+LDFLAGS += -nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE)
+LDFLAGS += -msoft-float -Wl,--Map=$(TARGET).map
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
-
 Q := @
 # Do not print "Entering directory ...".
 MAKEFLAGS += --no-print-directory
 endif
 
-# common objects
-OBJS += $(CPU_OBJS) $(BOARD_OBJS) $(APP_OBJS)
+# Object files
+APP_O_FILES = $(APP_C_FILES:.c=.o) $(APP_S_FILES:.s=.o)
+BOARD_O_FILES = $(BOARD_C_FILES:.c=.o) $(BOARD_S_FILES:.s=.o)
+CPU_O_FILES = $(CPU_C_FILES:.c=.o) $(CPU_S_FILES:.s=.o)
+LIB_O_FILES  = $(LIB_C_FILES:.c=.o) $(LIB_S_FILES:.s=.o)
+
+ALL_O_FILES := $(APP_O_FILES) $(BOARD_O_FILES) $(CPU_O_FILES) $(LIB_O_FILES)
 
 ifeq ($(TARGET),)
 $(error TARGET is not defined, please define it in your applications config.mk)
 endif
 
-LIBS_ALL = $(addprefix lib,$(BASE_LIBS:=.a))
+LIB_CONFIGS = $(wildcard $(LIB_PATH)/*.mk)
 
-all: messages $(LIBS_ALL) $(TARGET).bin pylib
+all: messages $(TARGET).bin pylib
 
-libstm32f4_periph.a: $(STM32F4_PERIPH_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
-
-libstm32_usb.a: $(STM32_USB_OBJS)
-	$(Q)$(AR) $(ARFLAGS) $@ $^
+libs.mk: Makefile
+	@printf " Generating library includes\n"
+	@( $(foreach L,$(LIB_CONFIGS),echo 'include $L';) ) >$@
 
 $(TARGET).bin: $(TARGET).elf
 	@printf "  OBJCOPY $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(PREFIX)-objcopy -Obinary $< $@
 	$(SIZE) $<
 
-$(TARGET).elf: $(OBJS)
+$(TARGET).elf: libs.mk $(ALL_O_FILES)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) -o $@ $(OBJS) $(LDFLAGS)
+	$(Q)$(CC) -o $@ $(ALL_O_FILES) $(LDFLAGS)
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
@@ -126,9 +140,7 @@ messages:
 
 clean:
 	$(Q)rm -f *.o *.a *.d ../*.o ../*.d $(OBJS) $(LIBS_ALL)\
-	$(STM32F4_PERIPH_OBJS) \
-	$(APP_OBJS) \
-	$(STM32_USB_OBJS) \
+	$(ALL_O_FILES) \
 	$(shell find . -name "*.d") \
 	$(TARGET).bin $(TARGET).elf \
 	upgrade_agent/xbvc_core.c \
@@ -137,13 +149,14 @@ clean:
 	upgrade_agent/cobs.h \
 	host_tools/cobs.py* \
 	host_tools/xbvc_py* \
-	asl_f4_loader*.tar.gz
+	asl_f4_loader*.tar.gz \
+	libs.mk
 
-flash: $(TARGET).bin
-	$(APP_FLASH)
+flash: $(TARGET).elf
+	$(OPENOCD) -f $(BOARD_PATH)/debug.ocd -f flash.ocd
 
 debug: $(TARGET).bin
-	$(OPENOCD) -f $(APP_PATH)/openocd.cfg
+	$(OPENOCD) -f $(BOARD_PATH)/debug.ocd
 
 ddd: $(TARGET).elf
 	$(DDD) --eval-command="target remote localhost:3333" --debugger $(GDB) $(TARGET).elf
