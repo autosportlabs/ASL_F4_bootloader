@@ -1,8 +1,7 @@
 # The name of our project (and the associated artifacts created)
 TARGET = main
 
-
-#Base directory of our application (assumes FreeRTOS_Base is '.')
+#Base directory of our application
 APP_PATH = .
 
 RCP_RELEASE_DIR ?= .
@@ -35,7 +34,4 @@ APP_INCLUDES += -I. \
 
 #Uncomment the following to use the ITM (trace macrocell) for printf
 APP_DEFINES += -DUSE_ITM -DSD_SDIO -DMAJOR_REV=$(MAJOR) -DMINOR_REV=$(MINOR) -DBUGFIX_REV=$(BUGFIX)
-
-#Optional command to flash the board using an ST-Link
-APP_FLASH = st-flash erase write $(TARGET).bin 0x08000000
 

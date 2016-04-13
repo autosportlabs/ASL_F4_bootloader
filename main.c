@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <img_utils.h>
 #include <upgrade_agent.h>
-#include <stm32f4xx.h>
 #include <bootmode.h>
 
 int main(void)

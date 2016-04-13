@@ -29,8 +29,8 @@ int USB_CDC_device_deinit(void);
 
 int USB_CDC_read(uint8_t *dst, int len);
 void USB_CDC_write(uint8_t *src, int len);
-int USB_CDC_is_initialized();
-void USB_CDC_flush();
+int USB_CDC_is_initialized(void);
+void USB_CDC_flush(void);
 
 
 #endif /* USB_CDC_DEVICE_H_ */
