@@ -8,14 +8,16 @@ import struct
 import optparse
 import subprocess
 import ihextools as ihex
+import os
 
 #Size of the info block in bytes
 INFO_SIZE = 20
 INFO_MAGIC = 0xDEADFA11
 
 class FwImage(object):
-    def __init__(self, bin_path, image_start):
+    def __init__(self, bin_path, elf_path, image_start):
         self._base_offset = image_start
+        self._elf_path = elf_path
         self._bin = open(bin_path, 'rb').read()
         self._app_len = len(self._bin)
 
@@ -91,7 +93,7 @@ class FwImage(object):
 
         #Call the 'nm' command to obtain a list of all of the symbols
         #in the firmware
-        cmd = [ 'arm-none-eabi-nm', 'main.elf']
+        cmd = [ 'arm-none-eabi-nm', self._elf_path]
         output = subprocess.Popen( cmd, stdout=subprocess.PIPE ).communicate()[0].split('\n')
 
         #Now, loop through this symbol list and try to find the info block
@@ -127,6 +129,10 @@ def main():
                       dest="input_filename",
                       help="Filename of .bin file to process")
 
+    parser.add_option('-e', '--elf',
+                      dest="elf_filename",
+                      help="Filename of .elf file that contains the symbol table")
+
     parser.add_option('-b', '--bin',
                       dest="binary_filename",
                       help="Generate a CRC'd binary file")
@@ -146,10 +152,13 @@ def main():
     if not options.input_filename:
         parser.error("No filename specified")
 
+    if not options.elf_filename:
+        parser.error("No Elf specified")
+
     if not options.binary_filename and not options.ihex_filename:
         parser.error("Must specifiy a binary and/or ihex file to store")
 
-    img = FwImage(options.input_filename, options.base_offset)
+    img = FwImage(options.input_filename, options.elf_filename, options.base_offset)
 
     if options.binary_filename:
         img.save_binary_img(options.binary_filename)
