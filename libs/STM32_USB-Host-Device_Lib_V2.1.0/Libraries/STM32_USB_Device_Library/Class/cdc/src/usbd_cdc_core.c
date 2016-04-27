@@ -328,7 +328,7 @@ __ALIGN_BEGIN uint8_t usbd_cdc_OtherCfgDesc[USB_CDC_CONFIG_DESC_SIZ]  __ALIGN_EN
   0x02,   /* bNumInterfaces: 2 interfaces */
   0x01,   /* bConfigurationValue: */
   0x04,   /* iConfiguration: */
-  0xC0,   /* bmAttributes: */
+  0x80,   /* bmAttributes: bus powered */
   0x32,   /* MaxPower 100 mA */  
   
   /*Interface Descriptor */
