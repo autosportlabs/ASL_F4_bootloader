@@ -107,12 +107,20 @@ void jump_to_app(uint32_t address)
 	reset_vec = (func_ptr)((uint32_t)vec_table[1]);
 
 	/* Disable all interrupts */
-	int i;
-	for (i = 0; i < 8; i++)
-		NVIC->ICER[i] = NVIC->IABR[i];
+	NVIC->ICER[0] = 0xFFFFFFFF;
+	NVIC->ICER[1] = 0x00000001;
+	/* Clear all pending interrupts */
+	NVIC->ICPR[0] = 0xFFFFFFFF;
+	NVIC->ICPR[1] = 0x00000001;
+
+	/* Clear all interrupt priority */
+	for (int tmp = 0; tmp < 32; tmp++) {
+		NVIC->IP[tmp] = 0x00;
+	}
 
 	/* Set the stack pointer to the first word in the vector table */
 	__set_MSP((uint32_t)(vec_table[0]));
+	__set_PSP((uint32_t)(vec_table[0]));
 
 	/* Execute the reset vector (we don't return from this) */
 	reset_vec();
