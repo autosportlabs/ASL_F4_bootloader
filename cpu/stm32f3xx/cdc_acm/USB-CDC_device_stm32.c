@@ -91,9 +91,10 @@ int USB_CDC_device_init(void)
 
 int USB_CDC_device_deinit(void)
 {
+	PowerOff();
+
 	return 0;
 }
-
 
 void USB_CDC_flush(void)
 {
@@ -105,11 +106,20 @@ void USB_CDC_flush(void)
 		usb_buf_elements = USB_BUF_ELTS(usb_state.USB_Tx_ptr_in,
 						usb_state.USB_Tx_ptr_out,
 						VIRTUAL_COM_PORT_DATA_SIZE);
-	}	
+	}
+
+	/* Allow a little time for the hardware to clear out */
+	for(int i = 0; i < 10000; i++) {
+		asm volatile("NOP");
+	}
+
 }
 
 void USB_CDC_write(uint8_t *src, int len)
 {
+	if (bDeviceState != CONFIGURED) {
+		return;
+	}
 	while (len--) {
 		/*
 		 * If the transmit buffer is full, wait until the USB
@@ -140,6 +150,10 @@ void USB_CDC_write(uint8_t *src, int len)
 int USB_CDC_read(uint8_t *dst, int len)
 {
 	int received = 0;
+
+	if (bDeviceState != CONFIGURED) {
+		return 0;
+	}
 
 	while (len--) {
 
