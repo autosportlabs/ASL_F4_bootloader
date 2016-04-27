@@ -17,10 +17,10 @@ int main(void)
 	/* Check to see if an upgrade has been specifically requested
 	 * by the user */
 	upgrade_requested = bootmode_upgrade_requested();
-	
+
 	/* Check to see if we have an application in our flash area */
 	app = scan_for_app();
-	
+
 	if (upgrade_requested || app == NULL)
 		upgrade_agent_usb_loader();
 
