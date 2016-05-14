@@ -24,7 +24,7 @@
 
 void led_init(void)
 {
-       	GPIO_InitTypeDef gpio_conf;
+	GPIO_InitTypeDef gpio_conf;
 
 	/* Clear the GPIO Structure */
 	GPIO_StructInit(&gpio_conf);
