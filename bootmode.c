@@ -18,11 +18,10 @@ static bool bootmode_check_software_flag(void)
 
 bool bootmode_upgrade_requested(void)
 {
-	bool gpi, sw;
 	bool ret = false;
 
-	gpi = boot_gpi_asserted();
-	sw = bootmode_check_software_flag();
+	const bool gpi = boot_gpi_asserted();
+	const bool sw = bootmode_check_software_flag();
 
 	if (gpi || sw)
 		ret = true;
