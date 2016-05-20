@@ -91,11 +91,10 @@ MAKEFLAGS += --no-print-directory
 endif
 
 # Object files
-APP_O_FILES = $(APP_C_FILES:.c=.o) $(APP_S_FILES:.s=.o)
-BOARD_O_FILES = $(BOARD_C_FILES:.c=.o) $(BOARD_S_FILES:.s=.o)
-CPU_O_FILES = $(CPU_C_FILES:.c=.o) $(CPU_S_FILES:.s=.o)
-LIB_O_FILES  = $(LIB_C_FILES:.c=.o) $(LIB_S_FILES:.s=.o)
-
+APP_O_FILES := $(APP_C_FILES:.c=.o) $(APP_S_FILES:.s=.o)
+BOARD_O_FILES := $(BOARD_C_FILES:.c=.o) $(BOARD_S_FILES:.s=.o)
+CPU_O_FILES := $(CPU_C_FILES:.c=.o) $(CPU_S_FILES:.s=.o)
+LIB_O_FILES := $(LIB_C_FILES:.c=.o) $(LIB_S_FILES:.s=.o)
 ALL_O_FILES := $(APP_O_FILES) $(BOARD_O_FILES) $(CPU_O_FILES) $(LIB_O_FILES)
 
 ifeq ($(TARGET),)
