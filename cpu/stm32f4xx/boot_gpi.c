@@ -5,7 +5,7 @@
 
 bool boot_gpi_asserted(void)
 {
-		bool ret = false;
+	bool ret = false;
 	uint8_t bit = 0;
 	GPIO_InitTypeDef GPIO_InitStructure;
 
