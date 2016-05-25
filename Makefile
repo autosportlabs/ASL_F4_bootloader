@@ -116,15 +116,15 @@ $(TARGET).bin: $(TARGET).elf
 
 $(TARGET).elf: libs.mk $(ALL_O_FILES)
 	@printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) -o $@ $(ALL_O_FILES) $(LDFLAGS)
+	$(Q)$(CCACHE) $(CC) -o $@ $(ALL_O_FILES) $(LDFLAGS)
 
 .c.o:
 	@printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
+	$(Q)$(CCACHE) $(CC) $(CFLAGS) -c -o $@ $<
 
 .s.o:
 	@printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(CC) $(ASFLAGS) -c -o $@ $<
+	$(Q)$(CCACHE) $(CC) $(ASFLAGS) -c -o $@ $<
 
 pylib: messages
 	@printf " Generating python library\n"
