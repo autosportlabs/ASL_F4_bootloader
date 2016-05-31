@@ -8,7 +8,7 @@ bool boot_gpi_asserted(void)
 	uint8_t bit = 0;
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 
         GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
