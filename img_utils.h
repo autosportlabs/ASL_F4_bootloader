@@ -2,8 +2,8 @@
 #define _IMG_UTILS_H_
 
 #include <app_info.h>
+#include <cpu.h>
 
-#define FLASH_SIZE_REG	(0x1FFF7A22)
 #define FLASH_SIZE      (((*(uint32_t*)FLASH_SIZE_REG) & 0xffff) * 1024)
 #define FLASH_END       (0x08000000 + FLASH_SIZE)
 

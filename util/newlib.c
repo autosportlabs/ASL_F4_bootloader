@@ -26,6 +26,10 @@ void _exit(int status)
 	while (1);
 }
 
+void _init(void)
+{
+}
+
 int _close(int file)
 {
 	(void)file;

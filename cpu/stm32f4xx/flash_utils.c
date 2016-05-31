@@ -112,15 +112,13 @@ static int8_t flash_get_sector(uint32_t address)
 /* Returns False==0 / True==1 / Invalid_sector==-1 */
 static int8_t flash_check_sec_erased(uint8_t sec)
 {
-	int8_t ret = 0;
-
 	if (sec >= ARRAY_SIZE(flash_layout))
 		return -1;
 
 	if (flash_layout[sec].erased)
-		ret = 1;
+		return 1;
 
-	return ret;
+	return 0;
 }
 
 /* Returns 0 on success, anything else is a failure */
@@ -133,13 +131,15 @@ static int8_t flash_erase_sector(int8_t sec)
 		return -1;
 
 	st = FLASH_EraseSector(flash_layout[sec].sector, VoltageRange_3);
-	
+
+	st = FLASH_WaitForLastOperation();
 
 	if (st != FLASH_COMPLETE)
 		ret = -2;
 
 	/* Mark this sector as erased */
 	flash_layout[sec].erased = true;
+
 	return ret;
 }
 

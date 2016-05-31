@@ -1,31 +1,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <stm32f4xx.h>
-#include <core_cm4.h>
-#include <stm32f4xx_misc.h>
-#include <stm32f4xx_crc.h>
-#include <stm32f4xx_rcc.h>
+#include <cpu.h>
+#include <crc.h>
 
 #include <img_utils.h>
-
-/* CRC's a block of 32 bit words */
-static uint32_t crc_block(uint32_t *start, size_t len, bool reset)
-{
-	uint32_t res;
-	/* Enable CRC clock */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_CRC, ENABLE);
-	
-	if (reset)
-		CRC_ResetDR();
-
-	res = CRC_CalcBlockCRC(start, len);
-	
-	/* Disable CRC clock */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_CRC, DISABLE);
-	
-	return res;
-}
 
 static int validate_app(struct app_info_block *info_block)
 {
@@ -113,6 +92,7 @@ struct app_info_block *scan_for_app(void)
 	return NULL;
 }
 
+__attribute__((__naked__,__noreturn__))
 void jump_to_app(uint32_t address)
 {
 	typedef void (*func_ptr)(void);
@@ -127,12 +107,12 @@ void jump_to_app(uint32_t address)
 	reset_vec = (func_ptr)((uint32_t)vec_table[1]);
 
 	/* Disable all interrupts */
-	int i;
-	for (i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)
 		NVIC->ICER[i] = NVIC->IABR[i];
 
 	/* Set the stack pointer to the first word in the vector table */
 	__set_MSP((uint32_t)(vec_table[0]));
+	__set_PSP((uint32_t)(vec_table[0]));
 
 	/* Execute the reset vector (we don't return from this) */
 	reset_vec();
