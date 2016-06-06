@@ -153,7 +153,7 @@ def main():
         parser.error("No filename specified")
 
     if not options.elf_filename:
-        parser.error("No Elf specified")
+        options.elf_filename = 'main.elf'
 
     if not options.binary_filename and not options.ihex_filename:
         parser.error("Must specifiy a binary and/or ihex file to store")
