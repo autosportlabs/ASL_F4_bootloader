@@ -49,7 +49,7 @@ void led_toggle(void)
 {
 	const uint8_t led_state = GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_1);
 
-	if (led_state) {
+	if (!led_state) {
 		GPIO_SetBits(GPIOA, GPIO_Pin_1);
 	} else {
 		GPIO_ResetBits(GPIOA, GPIO_Pin_1);
