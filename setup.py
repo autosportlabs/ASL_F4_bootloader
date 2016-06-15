@@ -33,5 +33,6 @@ setup(
     install_requires=[
         'ihextools >= 1.0.0',
         'pyserial >= 2.7',
+        'crcmod >= 1.7',
     ]
 )
