@@ -66,6 +66,12 @@ static int USB_CDC_force_reenumeration(void)
 
  	GPIO_ResetBits(GPIOA, GPIO_Pin_12);
 
+	/* Introduce a small delay to ensure re-enumeration */
+	for (int i = 0; i < 0xffff; i++) {
+		__DSB();
+		__ISB();
+	}
+
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
