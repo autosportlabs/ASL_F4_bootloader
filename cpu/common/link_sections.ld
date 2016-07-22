@@ -25,7 +25,8 @@
  *   __stack
  */
 ENTRY(Reset_Handler)
-
+_flash_start = ORIGIN(FLASH);
+_flash_end = ORIGIN(FLASH) + LENGTH(FLASH);
  SECTIONS
  {
    /* The startup code goes first into FLASH */
