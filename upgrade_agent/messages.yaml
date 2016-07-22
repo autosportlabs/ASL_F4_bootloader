@@ -60,3 +60,15 @@ ping_command:
 ping_response:
   - _targets: {device}
   - _id: 7
+
+get_version_command:
+  - _targets: {host}
+  - _id: 8
+
+get_version_response:
+  - _targets: {device}
+  - _id: 9
+  - major: u32
+  - minor: u32
+  - bugfix: u32
+
