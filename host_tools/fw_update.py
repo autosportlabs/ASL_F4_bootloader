@@ -52,6 +52,27 @@ class FwUpdater(object):
         else:
             print(msg)
 
+    def _get_version(self, port):
+        #Create our edgepoint
+        try:
+            ep = XBVCSerialEP(port)
+            ep.timeout_ms = 1000
+            ep.connect()
+            ep.start()
+
+            ver = get_version_command()
+
+            ep.flush()
+
+            res = ep.send(ver, GET_VERSION_RESPONSE_ID)
+        except:
+            res = None
+        finally:
+            ep.stop()
+            ep.disconnect()
+
+        return res
+
     def _send_ping(self, port):
         #Create our edgepoint
         try:
@@ -80,18 +101,24 @@ class FwUpdater(object):
         ports = [x[0] for x in list_ports.comports()]
         retport = None
         self._log("Searching for an active bootloader")
-        
+
         for p in ports:
             try:
                 rsp = self._send_ping(p)
                 if not rsp == None:
-                    self._log("Found bootloader on: {}".format(p))
+                    ver = self._get_version(p)
+                    if not ver:
+                        version = '<=0.1.2'
+                    else:
+                        version = '.'.join(
+                            [str(x) for x in
+                             (ver.major, ver.minor, ver.bugfix)])
+                    self._log("Found bootloader ver: {} on: {}".format(version, p))
                     retport = p
                     break
                 else:
-                    raise Exception()
-
-            except:
+                    raise IOError()
+            except IOError:
                 pass
 
         return retport
