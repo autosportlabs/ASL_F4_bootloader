@@ -11,8 +11,8 @@ extern uint32_t _flash_end;
 
 static int offset_in_bootloader(uint32_t offset)
 {
-	return !!((offset < (uint32_t)&_flash_end) &&
-		  (offset >= (uint32_t)&_flash_start));
+	return ((offset < (uint32_t)&_flash_end) &&
+		(offset >= (uint32_t)&_flash_start));
 }
 
 void xbvc_handle_flash_command(struct x_flash_command *msg)
