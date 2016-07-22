@@ -116,4 +116,7 @@ void jump_to_app(uint32_t address)
 
 	/* Execute the reset vector (we don't return from this) */
 	reset_vec();
+
+	/* Should never get here. */
+	for(;;);
 }

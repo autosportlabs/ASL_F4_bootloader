@@ -1,9 +1,10 @@
-#include <stddef.h>
-#include <xbvc_core.h>
-#include <img_utils.h>
 #include <flash_utils.h>
+#include <img_utils.h>
+#include <stddef.h>
+#include <string.h>
 #include <upgrade_agent.h>
 #include <version.h>
+#include <xbvc_core.h>
 
 static struct app_info_block *last_known_info;
 extern uint32_t _flash_start;
@@ -89,4 +90,3 @@ void xbvc_handle_get_version_command(struct x_get_version_command *msg)
 	xbvc_send(&rsp, E_MSG_GET_VERSION_RESPONSE);
 	upgrade_agent_usb_flush();
 }
-
