@@ -18,19 +18,12 @@ static int offset_in_bootloader(uint32_t offset)
 void xbvc_handle_flash_command(struct x_flash_command *msg)
 {
 	struct x_flash_response rsp;
-	int8_t res;
 
-	rsp.error = ERR_SUCCESS;
+	rsp.error = ERR_FLASH_FAIL;
+	if (!offset_in_bootloader(msg->offset) &&
+	    !flash_write_block(msg->data, msg->data_len, msg->offset)) {
 
-	if (offset_in_bootloader(msg->offset)) {
-		rsp.error = ERR_FLASH_FAIL;
-	} else {
-
-		res = flash_write_block(msg->data, msg->data_len, msg->offset);
-
-		if (res) {
-			rsp.error = ERR_FLASH_FAIL;
-		}
+		rsp.error = ERR_SUCCESS;
 	}
 	xbvc_send(&rsp, E_MSG_FLASH_RESPONSE);
 }

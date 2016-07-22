@@ -65,8 +65,7 @@ class FwUpdater(object):
             ep.flush()
 
             res = ep.send(ver, GET_VERSION_RESPONSE_ID)
-        except Exception as e:
-            print e
+        except:
             res = None
         finally:
             ep.stop()
@@ -118,10 +117,8 @@ class FwUpdater(object):
                     retport = p
                     break
                 else:
-                    raise Exception()
-
-            except Exception as e:
-                print e
+                    raise IOError()
+            except IOError:
                 pass
 
         return retport
