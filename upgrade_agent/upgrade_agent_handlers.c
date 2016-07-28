@@ -45,28 +45,29 @@ void xbvc_handle_verify_command(struct x_verify_command *msg)
 
 void xbvc_handle_run_command(struct x_run_command *msg)
 {
-	struct x_run_response rsp;
-	rsp.error = ERR_SUCCESS;
+	struct x_run_response rsp =  {.error = ERR_SUCCESS};
 
-	if (last_known_info == NULL)
+	/* If we don't know about any applications, check to see if
+	 * one has been flashed into NVM */
+	if (NULL == last_known_info) {
 		last_known_info = scan_for_app();
 
-	if (last_known_info == NULL)
-		rsp.error = ERR_RUN_FAIL;
-	else
-		rsp.error = ERR_SUCCESS;
+		/* Check again, if we still didn't find anything,
+		 * set an appropriate error response*/
+		if (NULL == last_known_info) {
+			rsp.error = ERR_RUN_FAIL;
+		}
+	}
 
 	xbvc_send(&rsp, E_MSG_RUN_RESPONSE);
 
 	/* Make sure we sent the run response */
 	upgrade_agent_usb_flush();
 
-	if (last_known_info != NULL) {
-		/* Shut down the USB interface */
-		upgrade_agent_usb_deinit();
-
-		/* Get going */
-		jump_to_app(last_known_info->start_addr);
+	/* Simply perform a reset, the bootloader will pick up the
+	 * application and execute it on the next go around */
+	if (ERR_SUCCESS == rsp.error) {
+		NVIC_SystemReset();
 	}
 }
 
