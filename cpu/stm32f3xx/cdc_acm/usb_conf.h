@@ -69,14 +69,16 @@
 /* IMR_MSK */
 /* mask defining which events has to be handled */
 /* by the device application software */
-/*
+
+/* JC: Original configuration
+
   #define IMR_MSK (CNTR_CTRM  | CNTR_WKUPM | CNTR_SUSPM | CNTR_ERRM  | CNTR_SOFM \
                 | CNTR_ESOFM | CNTR_RESETM )
 */
 
+/* JC: WKUP/SUSPEND Functionality disabled */
 #define IMR_MSK (CNTR_CTRM | CNTR_ERRM  | CNTR_SOFM \
                  | CNTR_ESOFM | CNTR_RESETM )
-
 
 /*#define CTR_CALLBACK*/
 /*#define DOVR_CALLBACK*/

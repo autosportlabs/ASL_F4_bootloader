@@ -62,7 +62,8 @@ const uint8_t Virtual_Com_Port_ConfigDescriptor[] =
     0x00,
     0x02,   /* bNumInterfaces: 2 interface */
     0x01,   /* bConfigurationValue: Configuration value */
-    0x00,   /* iConfiguration: Index of string descriptor describing the configuration */
+    0x00,   /* iConfiguration: Index of string descriptor describing
+	     * the configuration */
     0x80,   /* bmAttributes: bus powered */
     0xFA,   /* MaxPower 500 mA */
     /*Interface Descriptor*/
