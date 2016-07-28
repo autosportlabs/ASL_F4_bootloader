@@ -68,9 +68,9 @@ GDB     := $(PREFIX)-gdb
 INCLUDES += $(CPU_INCLUDES) $(BOARD_INCLUDES) $(LIB_INCLUDES) $(APP_INCLUDES)
 INCLUDES += -Icpu/common -Iboard/common
 
-CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb
+CFLAGS ?= -Os -g -Wall -fno-common -c -mthumb -fno-strict-aliasing
 CFLAGS += -mcpu=$(CPU_TYPE) -MD -std=gnu99
-#CFLAGS += -ffunction-sections -fdata-sections -flto
+CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += $(INCLUDES) $(CPU_DEFINES) $(BOARD_DEFINES) $(APP_DEFINES) $(CPU_FLAGS)
 
 ASFLAGS += -mcpu=$(CPU_TYPE) $(FPU) -g -Wa,--warn
@@ -79,8 +79,8 @@ LIBS = -lnosys
 
 LDFLAGS ?= --specs=nano.specs -lc -lgcc $(LIBS) -mcpu=$(CPU_TYPE) -g -gdwarf-2 
 LDFLAGS += -L. -Lcpu/common -L$(CPU_BASE) -T$(CPU_LINK_MEM) -Tlink_sections.ld 
-LDFLAGS += -nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE)
-#LDFLAGS += -ffunction-sections -fdata-sections -flto -Os
+LDFLAGS += -nostartfiles -Wl,--gc-sections -mthumb -mcpu=$(CPU_TYPE) -Os
+LDFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -msoft-float -Wl,--Map=$(TARGET).map
 
 # Be silent per default, but 'make V=1' will show all compiler calls.
