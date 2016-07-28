@@ -92,19 +92,16 @@ struct app_info_block *scan_for_app(void)
 	return NULL;
 }
 
-__attribute__((__naked__,__noreturn__))
+__attribute__((__naked__, __noreturn__))
 void jump_to_app(uint32_t address)
 {
 	typedef void (*func_ptr)(void);
-
-	/* Function pointer to our app */
-	func_ptr reset_vec;
 
 	/* Variable to hold the start address of the application */
 	const uint32_t *vec_table = (uint32_t*) address;
 
 	/* Get the reset vector from the vector table */
-	reset_vec = (func_ptr)((uint32_t)vec_table[1]);
+	const func_ptr reset_vec = (func_ptr)((uint32_t)vec_table[1]);
 
 	/* Disable all interrupts */
 	for (int i = 0; i < 8; i++)
@@ -113,6 +110,13 @@ void jump_to_app(uint32_t address)
 	/* Set the stack pointer to the first word in the vector table */
 	__set_MSP((uint32_t)(vec_table[0]));
 	__set_PSP((uint32_t)(vec_table[0]));
+
+	/*
+	 * Perform a pipeline flush to ensure stack pointers are set
+	 * before jumping
+	 */
+	__DSB();
+	__ISB();
 
 	/* Execute the reset vector (we don't return from this) */
 	reset_vec();
