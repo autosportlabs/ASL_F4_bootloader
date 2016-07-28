@@ -26,11 +26,11 @@ int USB_CDC_device_init(void)
 
 int USB_CDC_device_deinit(void)
 {
+	USBD_DeInit(&USB_OTG_dev);
+
 	return 0;
 }
 
-
-/* TODO: Plumb */
 int USB_CDC_read(uint8_t *dst, int len )
 {
 	return vcp_rx(dst, len, 0xffffffff);
