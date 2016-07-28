@@ -111,8 +111,10 @@ void jump_to_app(uint32_t address)
 	__set_MSP((uint32_t)(vec_table[0]));
 	__set_PSP((uint32_t)(vec_table[0]));
 
-	/* Perform a pipeline flush to ensure stack pointers are set
-	 * before jumping */
+	/*
+	 * Perform a pipeline flush to ensure stack pointers are set
+	 * before jumping
+	 */
 	__DSB();
 	__ISB();
 
