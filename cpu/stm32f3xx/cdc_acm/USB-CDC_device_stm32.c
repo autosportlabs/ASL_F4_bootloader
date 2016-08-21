@@ -32,14 +32,14 @@
 
 #define USB_BUF_ELTS(in, out, bufsize) ((in - out + bufsize) % bufsize)
 
-static struct {
+static volatile struct {
 	uint8_t USB_Rx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
 	uint8_t USB_Tx_Buffer[VIRTUAL_COM_PORT_DATA_SIZE];
-	volatile uint32_t USB_Tx_ptr_in;
-	volatile uint32_t USB_Tx_ptr_out;
-	volatile uint32_t USB_Rx_ptr_in;
-	volatile uint32_t USB_Rx_ptr_out;
-	volatile int _init_flag;
+	uint32_t USB_Tx_ptr_in;
+	uint32_t USB_Tx_ptr_out;
+	uint32_t USB_Rx_ptr_in;
+	uint32_t USB_Rx_ptr_out;
+	int _init_flag;
 } usb_state;
 
 /*
@@ -166,6 +166,7 @@ int USB_CDC_read(uint8_t *dst, int len)
 		if (usb_state.USB_Rx_ptr_out != usb_state.USB_Rx_ptr_in) {
 			*dst++ = usb_state.USB_Rx_Buffer[usb_state.USB_Rx_ptr_out++];
 			received++;
+
 			/*
 			 * If we've cleared the buffer, send a signal to the
 			 * USB hardware to stop NAKing packets and to
@@ -248,8 +249,13 @@ void EP3_OUT_Callback(void)
 	/*
 	 * USB data will be processed by handler threads, we will
 	 * continue to NAK packets until such a time as all of the
-	 * prior data has been handled
+	 * prior data has been handled.  Only re-enable this buffer if datalen
+	 * is zero.
 	 */
+	if (usb_state.USB_Rx_ptr_out == usb_state.USB_Rx_ptr_in) {
+		/* Enable the receive of data on EP3 */
+		SetEPRxValid(ENDP3);
+	}
 }
 
 void SOF_Callback(void)
