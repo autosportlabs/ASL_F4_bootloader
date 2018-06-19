@@ -15,8 +15,10 @@ class XBVCSerialEP(XBVCEdgePoint):
         self._ser = serial.Serial(self._port, 115200, timeout=0)
 
     def disconnect(self):
-        self._ser.close()
-
+        try:
+            self._ser.close()
+        except:
+            pass
 
     def _read(self, length):
         res = self._ser.read(length)
@@ -45,6 +47,7 @@ class FwUpdater(object):
     def __init__(self, **kwargs):
         self._progress_cb = None
         self._logger = kwargs.get('logger', None)
+        self._log('FWUpdater 0.3.3a')
 
     def _log(self, msg):
         if self._logger:
@@ -53,7 +56,7 @@ class FwUpdater(object):
             print(msg)
 
     def _get_version(self, port):
-        #Create our edgepoint
+        # Create our edgepoint
         try:
             ep = XBVCSerialEP(port)
             ep.timeout_ms = 1000
@@ -74,7 +77,7 @@ class FwUpdater(object):
         return res
 
     def _send_ping(self, port):
-        #Create our edgepoint
+        # Create our edgepoint
         try:
             ep = XBVCSerialEP(port)
             ep.timeout_ms = 1000
@@ -124,24 +127,24 @@ class FwUpdater(object):
         return retport
 
     def _init_xbvc(self):
-        #Create our edgepoint
+        # Create our edgepoint
         self.ep = XBVCSerialEP(self.port)
 
-        #set the timeout to 1 second
+        # set the timeout to 1 second
         # (since we're erasing, this can take some time)
         self.ep.timeout_ms = 1000
         self.ep.connect()
         self.ep.start()
 
     def _load_words_from_ihex(self):
-        #Load and process the ihex file
+        # Load and process the ihex file
         ih = ihex.iHex()
         ih.load_ihex(self.filepath)
 
-        #Get a list of the words in the ihex file (and their offsets)
+        # Get a list of the words in the ihex file (and their offsets)
         wl = ih.get_u32_list()
 
-        #Now, create 64 word chunks from this list of words
+        # Now, create 64 word chunks from this list of words
         wordchunks = [x for x in ihex.chunks(wl, 64)]
 
         return wordchunks
@@ -150,36 +153,36 @@ class FwUpdater(object):
         self.filepath = filepath
         self.port = port
 
-        #initialize the xbvc edgepoint
+        # initialize the xbvc edgepoint
         self._init_xbvc()
 
         wordchunks = self._load_words_from_ihex()
 
         self._log("Updating firmware...")
 
-        #get the total number of chunks (we'll use this for the progress bar)
+        # get the total number of chunks (we'll use this for the progress bar)
         num_chunks = len(wordchunks)
         chunks_remaining = num_chunks
 
-        #Take this list of chunks and turn each chunk into a flash_command
+        # Take this list of chunks and turn each chunk into a flash_command
         for chunk in wordchunks:
             fcmd = flash_command()
 
-            #set the starting offset of this command to the offset of the
-            #first word in the chunk
+            # set the starting offset of this command to the offset of the
+            # first word in the chunk
             fcmd.offset = chunk[0][0]
 
-            #Set the data_length to the number of words in this chunk
+            # Set the data_length to the number of words in this chunk
             fcmd.data_len = len(chunk)
 
-            #Now move the data words in this chunk to the data section of
-            #the flash command
+            # Now move the data words in this chunk to the data section of
+            # the flash command
             chunkdata = [x[1] for x in chunk]
             for i in range(len(chunkdata)):
                 fcmd.data[i] = chunkdata[i]
 
-            #if we're in verbose mode, print everything we see on the
-            #wire, otherwise, just keep a progress bar rolling
+            # if we're in verbose mode, print everything we see on the
+            # wire, otherwise, just keep a progress bar rolling
             if verbose:
                 self._log(fcmd)
                 self._log(len(fcmd.encode()))
@@ -188,11 +191,11 @@ class FwUpdater(object):
                 if self._progress_cb:
                     self._progress_cb(percent_complete)
 
-            #send the command and wait for a response
+            # send the command and wait for a response
             res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
 
             if res == None:
-                #Retry one time
+                # Retry one time
                 if verbose:
                     self._log("Retrying")
                 self.ep.flush()
@@ -214,7 +217,7 @@ class FwUpdater(object):
             self._log("\n")
         msg = verify_command()
 
-        #wait for a verify response
+        # wait for a verify response
         self._log("Verifying firmware")
         rsp = self.ep.send(msg, VERIFY_RESPONSE_ID)
 
@@ -254,7 +257,7 @@ def main():
     options, remainder = parser.parse_args()
     fu = FwUpdater()
 
-    #register a text mode progress bar
+    # register a text mode progress bar
     fu.register_progress_callback(progress_bar)
 
     if not options.input_filename:
