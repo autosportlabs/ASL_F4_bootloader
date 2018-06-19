@@ -38,3 +38,5 @@
 /upgrade_agent/xbvc_core.c
 /upgrade_agent/xbvc_core.h
 /asl_f4_loader-*.tar.gz
+board.default
+.pydevproject
