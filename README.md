@@ -31,7 +31,10 @@ search path.
 
 
 ## Building
-Simply type 'make'
+Run 'make', specifying the board, as an environment varible. 
+
+Example:
+BOARD=rct_mk2 make
 
 This will generate both a bootloader binary (in .bin and .elf formats)
 as well as a python .tgz that can be installed with pip.
