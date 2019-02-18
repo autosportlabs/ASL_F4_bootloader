@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Postprocessing script for Racecapture MK2 Firmware
 # Copyright 2014 Jeff Ciesielski <jeff@autosportlabs.com>
@@ -45,7 +45,7 @@ class FwImage(object):
         Reassembles the individual firmware blocks into a contiguous block
         """
         self._bin = self._pre_info + self._info + self._post_info
-        print "Application length: {}".format(len(self._bin))
+        print("Application length: {}".format(len(self._bin)))
 
     def _crc_block(self, block):
         """
@@ -83,8 +83,8 @@ class FwImage(object):
         self._info = struct.pack("<IIIII", INFO_MAGIC, self._base_offset,
                                  self._app_len, app_crc, info_crc)
 
-        print "Application CRC: {}".format(hex(app_crc))
-        print "Info CRC: {}".format(hex(info_crc))
+        print("Application CRC: {}".format(hex(app_crc)))
+        print("Info CRC: {}".format(hex(info_crc)))
 
     def _scan_for_info(self):
         """
@@ -117,7 +117,7 @@ class FwImage(object):
         (also stores the info block even though we're going to mutilate it)
         """
         info_offset = self._scan_for_info()
-        print "Found info block @ offset: {}".format(hex(info_offset))
+        print("Found info block @ offset: {}".format(hex(info_offset)))
         self._pre_info = self._bin[:info_offset]
         self._info = self._bin[info_offset:info_offset + INFO_SIZE]
         self._post_info = self._bin[info_offset + INFO_SIZE:]

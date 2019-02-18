@@ -252,7 +252,7 @@ def main():
                       dest="verbose",
                       help="turn on verbose debugging")
 
-    raw_input("Place your device into bootloader mode and then press any key")
+    input("Place your device into bootloader mode and then press any key")
 
     options, remainder = parser.parse_args()
     fu = FwUpdater()
@@ -261,7 +261,7 @@ def main():
     fu.register_progress_callback(progress_bar)
 
     if not options.input_filename:
-        print "You must provide an input filename"
+        print("You must provide an input filename")
         parser.print_help()
         sys.exit(1)
 
@@ -269,7 +269,7 @@ def main():
         port = fu.scan_for_device()
 
         if not port:
-            print "Unable to locate an active bootloader"
+            print("Unable to locate an active bootloader")
             parser.print_help()
             sys.exit(1)
     else:

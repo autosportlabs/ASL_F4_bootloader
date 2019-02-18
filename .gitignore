@@ -40,3 +40,4 @@
 /asl_f4_loader-*.tar.gz
 board.default
 .pydevproject
+build
