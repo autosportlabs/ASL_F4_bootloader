@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 # Postprocessing script for Racecapture MK2 Firmware
 # Copyright 2014 Jeff Ciesielski <jeff@autosportlabs.com>

@@ -1,11 +1,13 @@
-from xbvc_py import *
+from .xbvc_py import *
 import serial
 from serial.tools import list_ports
 import ihextools as ihex
 import optparse
 import sys
 
+
 class XBVCSerialEP(XBVCEdgePoint):
+
     def __init__(self, serial_port):
         super(XBVCSerialEP, self).__init__()
         self._port = serial_port
@@ -32,6 +34,7 @@ class XBVCSerialEP(XBVCEdgePoint):
         st_data = ''.join([chr(x) for x in data])
         self._ser.write(st_data)
 
+
 def progress_bar(percent_full, width=50):
     """
     Prints a progress bar in the form [*****        ] xx%
@@ -43,7 +46,9 @@ def progress_bar(percent_full, width=50):
     sys.stdout.write(progress_str)
     sys.stdout.flush()
 
+
 class FwUpdater(object):
+
     def __init__(self, **kwargs):
         self._progress_cb = None
         self._logger = kwargs.get('logger', None)
@@ -237,6 +242,7 @@ class FwUpdater(object):
 
         self.ep.stop()
         self.ep.disconnect()
+
 
 def main():
     parser = optparse.OptionParser()

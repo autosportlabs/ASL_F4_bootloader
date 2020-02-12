@@ -7,10 +7,10 @@ firmware images onto hardware.
 
 # ASL F4 Bootloader Application
 ## Requirements
-* Python2.7
+* Python3.7
 * crcmod (via pip)
-* [XBVC](https://github.com/Jeff-Ciesielski/XBVC)
-* [ihexpy](https://github.com/Jeff-Ciesielski/ihexpy)
+* [XBVC](https://github.com/autosportlabs/XBVC/archive/master.zip)
+* [ihexpy](https://github.com/autosportlabs/ihexpy/archive/master.zip)
 
 
 ## Installation
