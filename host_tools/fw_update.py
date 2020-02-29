@@ -23,7 +23,7 @@ class XBVCSerialEP(XBVCEdgePoint):
             pass
 
     def _read(self, length):
-        res = self._ser.read(length)
+        res = self._ser.read(length).decode()
 
         if len(res):
             return [ord(x) for x in res]
@@ -31,8 +31,7 @@ class XBVCSerialEP(XBVCEdgePoint):
             return None
 
     def _write(self, data):
-        st_data = ''.join([chr(x) for x in data])
-        self._ser.write(st_data)
+        self._ser.write(bytearray(data))
 
 
 def progress_bar(percent_full, width=50):

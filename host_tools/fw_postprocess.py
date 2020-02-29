@@ -94,7 +94,7 @@ class FwImage(object):
         #Call the 'nm' command to obtain a list of all of the symbols
         #in the firmware
         cmd = [ 'arm-none-eabi-nm', self._elf_path]
-        output = subprocess.Popen( cmd, stdout=subprocess.PIPE ).communicate()[0].split('\n')
+        output = subprocess.Popen( cmd, stdout=subprocess.PIPE, text=True ).communicate()[0].split('\n')
 
         #Now, loop through this symbol list and try to find the info block
         for var in output:
