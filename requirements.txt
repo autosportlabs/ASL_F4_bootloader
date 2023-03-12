@@ -1,0 +1,6 @@
+markupsafe==2.0.0
+crcmod==1.7
+https://github.com/autosportlabs/XBVC/archive/master.zip
+https://github.com/autosportlabs/ihexpy/archive/master.zip
+
+

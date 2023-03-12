@@ -41,3 +41,7 @@
 board.default
 .pydevproject
 build
+
+*.egg
+dist
+*.egg-info

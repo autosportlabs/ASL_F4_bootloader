@@ -154,93 +154,94 @@ class FwUpdater(object):
         return wordchunks
 
     def update_firmware(self, filepath, port, verbose=False):
-        self.filepath = filepath
-        self.port = port
+        try: 
+            self.filepath = filepath
+            self.port = port
 
-        # initialize the xbvc edgepoint
-        self._init_xbvc()
+            # initialize the xbvc edgepoint
+            self._init_xbvc()
 
-        wordchunks = self._load_words_from_ihex()
+            wordchunks = self._load_words_from_ihex()
 
-        self._log("Updating firmware...")
+            self._log("Updating firmware...")
 
-        # get the total number of chunks (we'll use this for the progress bar)
-        num_chunks = len(wordchunks)
-        chunks_remaining = num_chunks
+            # get the total number of chunks (we'll use this for the progress bar)
+            num_chunks = len(wordchunks)
+            chunks_remaining = num_chunks
 
-        # Take this list of chunks and turn each chunk into a flash_command
-        for chunk in wordchunks:
-            fcmd = flash_command()
+            # Take this list of chunks and turn each chunk into a flash_command
+            for chunk in wordchunks:
+                fcmd = flash_command()
 
-            # set the starting offset of this command to the offset of the
-            # first word in the chunk
-            fcmd.offset = chunk[0][0]
+                # set the starting offset of this command to the offset of the
+                # first word in the chunk
+                fcmd.offset = chunk[0][0]
 
-            # Set the data_length to the number of words in this chunk
-            fcmd.data_len = len(chunk)
+                # Set the data_length to the number of words in this chunk
+                fcmd.data_len = len(chunk)
 
-            # Now move the data words in this chunk to the data section of
-            # the flash command
-            chunkdata = [x[1] for x in chunk]
-            for i in range(len(chunkdata)):
-                fcmd.data[i] = chunkdata[i]
+                # Now move the data words in this chunk to the data section of
+                # the flash command
+                chunkdata = [x[1] for x in chunk]
+                for i in range(len(chunkdata)):
+                    fcmd.data[i] = chunkdata[i]
 
-            # if we're in verbose mode, print everything we see on the
-            # wire, otherwise, just keep a progress bar rolling
-            if verbose:
-                self._log(fcmd)
-                self._log(len(fcmd.encode()))
-            else:
-                percent_complete = 100 - ((chunks_remaining / float(num_chunks)) * 100)
-                if self._progress_cb:
-                    self._progress_cb(percent_complete)
-
-            # send the command and wait for a response
-            res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
-
-            if res == None:
-                # Retry one time
+                # if we're in verbose mode, print everything we see on the
+                # wire, otherwise, just keep a progress bar rolling
                 if verbose:
-                    self._log("Retrying")
-                self.ep.flush()
+                    self._log(fcmd)
+                    self._log(len(fcmd.encode()))
+                else:
+                    percent_complete = 100 - ((chunks_remaining / float(num_chunks)) * 100)
+                    if self._progress_cb:
+                        self._progress_cb(percent_complete)
+
+                # send the command and wait for a response
                 res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
+
                 if res == None:
-                    raise Exception("Error flashing device, no response!")
+                    # Retry one time
+                    if verbose:
+                        self._log("Retrying")
+                    self.ep.flush()
+                    res = self.ep.send(fcmd, FLASH_RESPONSE_ID)
+                    if res == None:
+                        raise Exception("Error flashing device, no response!")
 
-                if verbose:
-                    self._log(res)
-            elif res.error != 0:
-                raise Exception("Error flasing device, got error:{}".format(res.error))
+                    if verbose:
+                        self._log(res)
+                elif res.error != 0:
+                    raise Exception("Error flasing device, got error:{}".format(res.error))
+                else:
+                    chunks_remaining -= 1
+                    if verbose:
+                        self._log(res)
+
+            if not verbose and self._progress_cb:
+                self._progress_cb(100)
+                self._log("\n")
+            msg = verify_command()
+
+            # wait for a verify response
+            self._log("Verifying firmware")
+            rsp = self.ep.send(msg, VERIFY_RESPONSE_ID)
+
+            if verbose:
+                self._log(rsp)
+
+            if rsp.error == 0:
+                self._log("Firmware was valid!")
+                msg = run_command()
+                res = self.ep.send(msg, RUN_RESPONSE_ID)
+                if res == None:
+                    self._log("Bootload did not respond to run command, probably running anyway")
+                elif res.error == 0:
+                    self._log("Starting firmware")
             else:
-                chunks_remaining -= 1
-                if verbose:
-                    self._log(res)
-
-        if not verbose and self._progress_cb:
-            self._progress_cb(100)
-            self._log("\n")
-        msg = verify_command()
-
-        # wait for a verify response
-        self._log("Verifying firmware")
-        rsp = self.ep.send(msg, VERIFY_RESPONSE_ID)
-
-        if verbose:
-            self._log(rsp)
-
-        if rsp.error == 0:
-            self._log("Firmware was valid")
-            msg = run_command()
-            res = self.ep.send(msg, RUN_RESPONSE_ID)
-            if res.error == 0:
-                self._log("Starting firmware")
-            elif res == None:
-                raise Exception("Error: Bootloader did not respond to run command")
-        else:
-            raise Exception("Error validating flash on device. Updgrade failed")
-
-        self.ep.stop()
-        self.ep.disconnect()
+                raise Exception("Error validating flash on device. Updgrade failed")
+        finally:
+            self.ep.stop()
+            self.ep.disconnect()
 
 
 def main():
